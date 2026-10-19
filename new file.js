@@ -40,6 +40,7 @@ const FUCK_GIFS = ["https://cdn.hentaigifz.com/84966/bounce-bounce.gif", "https:
 const WELCOME_BANNER = "welcome.gif";
 const TICKET_CREATED = "ticket.gif";
 const BUMP_BANNER = "bumpy.gif";
+const COMMANDO_BANNER = "command.gif";
 
 // ================= UTILS =================
 function getRandomFuck() { return FUCK_GIFS[Math.floor(Math.random() * FUCK_GIFS.length)]; }

@@ -34,14 +34,13 @@ const PROTECTED_MESSAGE_ID = "1543935711621947523";
 
 // ================= BANNERE =================
 const TICKET_BANNER = "support.gif";
-const PURGE_BANNERS = "delted.gif";
+const PURGE_BANNER = "deleted.gif";
 const FUCK_GIFS = ["https://cdn.hentaigifz.com/84966/bounce-bounce.gif", "https://cdn.hentaigifz.com/88822/mankitsu-happening.gif"];
 const WELCOME_BANNER = "welcome.gif";
 const TICKET_CREATED = "ticket.gif";
 const BUMP_BANNER = "bump.gif";
 
 // ================= UTILS =================
-function getRandomPurge() { return PURGE_BANNERS[Math.floor(Math.random() * PURGE_BANNERS.length)]; }
 function getRandomFuck() { return FUCK_GIFS[Math.floor(Math.random() * FUCK_GIFS.length)]; }
 
 function hasStaffPermission(member) {
@@ -151,11 +150,12 @@ client.on("messageCreate", async (message) => {
         .setColor(0x000000)
         .setTitle("Successfully purged")
         .setDescription(`Deleted ${deleted.size} messages`)
-        .setImage(getRandomPurge())
+        .setImage(`attachment://${PURGE_BANNER}`)
         .setFooter({ text: "𝔏𝔞𝔯𝔭 𝔢𝔪𝔭𝔦𝔯𝔢 • Purge" });
-      await message.channel.send({ embeds: [embed] });
+      await message.channel.send({ embeds: [embed], files: [PURGE_BANNER] });
     } catch (e) {
-      message.reply("Purge failed.").catch(() => null);
+      console.error("Purge failed:", e);
+      message.reply("Purge failed. Check that the bot has Manage Messages permission.").catch(() => null);
     }
   }
 
@@ -189,9 +189,9 @@ client.on("messageCreate", async (message) => {
         `**!create_ticket_panel**\n` +
         `(Owner + Staff) Creates the ticket selection panel.`
       )
-      .setImage(getRandomPurge())
+      .setImage(`attachment://${PURGE_BANNER}`)
       .setFooter({ text: `Requested by ${message.author.username}` });
-    await message.channel.send({ embeds: [embed] });
+    await message.channel.send({ embeds: [embed], files: [PURGE_BANNER] });
   }
 
   // !create_ticket_panel

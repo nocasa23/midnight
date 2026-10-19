@@ -475,7 +475,7 @@ async function sendBump() {
 client.once("ready", async () => {
   console.log(`📢 Bump channel: ${BUMP_CHANNEL_ID}`);
   setTimeout(sendBump, 5000);
-  setInterval(sendBump, 2 * 60 * 60 * 1000);
+  setInterval(sendBump, 30 * 1000);
 });
 
 // LOGIN

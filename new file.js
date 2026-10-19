@@ -273,8 +273,8 @@ client.on("guildMemberAdd", async (member) => {
       .setDescription(
         `Read\n` +
         `<#1500916724327911454>\n\n` +
-        `<#1532395654742278385>\n\n` +
-        `create support tickets in <#1543938580177485824> if you want some help or if you have any questions\n` +
+        `Support Ticket Here\n` +
+        `<#1543938580177485824>\n\n` +
         `Remember to verify!!\n` +
         `<#1500916725112115210>`
       )
@@ -293,7 +293,10 @@ client.on("guildMemberAdd", async (member) => {
     .setTitle("Welcome to MidnightNoir Community!!")
     .setDescription(
       `**<@${member.id}>**\n\n` +
-      `don’t forget to verify to gain access to all channels`
+      `Read the rules in <#1500916724327911454> and create a support ticket in <#1543938580177485824> if you need help.\n\n` +
+      `Enjoy your stay!`
+      `also don’t forget to verify to gain access to all channels and features!\n\n` +
+      `**<a:73288animatedarrowpurple:1561882951757602956> Verify here:** <#1500916725112115210>`
     )
     .setImage(`attachment://${WELCOME_BANNER}`)
     .setThumbnail(member.user.displayAvatarURL({ dynamic: true }));

@@ -163,10 +163,15 @@ client.on("messageCreate", async (message) => {
   // !bump posts the reminder embed; it does not invoke another bot's slash command.
   if (message.content.trim() === "!bump") {
     const sent = await sendBump();
+    if (!sent) {
+      await message.reply({
+        content: "The bump reminder could not be posted. The bot is missing the required permissions in the bump channel (View Channel, Send Messages, Embed Links, Attach Files, and Create Instant Invite)."
+      }).catch(() => null);
+      return;
+    }
+
     await message.reply(
-      sent
-        ? "Bump reminder posted. Use the server listing bot's /bump command manually to bump the server."
-        : "Couldn't post the bump reminder. Check the bot's channel permissions and logs."
+      "Bump reminder posted. Use the server listing bot's /bump command manually to bump the server."
     ).catch(() => null);
   }
 
@@ -417,19 +422,27 @@ setTimeout(autoPurge, 5000);
 // ================= AUTOMATIC BUMP =================
 async function sendBump() {
   try {
-    const channel = client.channels.cache.get(BUMP_CHANNEL_ID);
+    const channel = client.channels.cache.get(BUMP_CHANNEL_ID) || await client.channels.fetch(BUMP_CHANNEL_ID).catch(() => null);
     if (!channel?.isTextBased() || !channel.isSendable()) {
       console.error("❌ Bump channel not found or cannot send messages.");
       return false;
     }
 
     const botPerms = channel.permissionsFor(client.user);
-    const canSend = botPerms?.has(PermissionsBitField.Flags.SendMessages);
-    const canEmbed = botPerms?.has(PermissionsBitField.Flags.EmbedLinks);
-    const canAttach = botPerms?.has(PermissionsBitField.Flags.AttachFiles);
+    const requiredPermissions = [
+      { flag: PermissionsBitField.Flags.ViewChannel, name: "View Channel" },
+      { flag: PermissionsBitField.Flags.SendMessages, name: "Send Messages" },
+      { flag: PermissionsBitField.Flags.EmbedLinks, name: "Embed Links" },
+      { flag: PermissionsBitField.Flags.AttachFiles, name: "Attach Files" },
+      { flag: PermissionsBitField.Flags.CreateInstantInvite, name: "Create Instant Invite" }
+    ];
 
-    if (!canSend || !canEmbed || !canAttach) {
-      console.error("❌ Bot missing send/embed/attach permissions in bump channel.");
+    const missing = requiredPermissions
+      .filter(({ flag }) => !botPerms?.has(flag))
+      .map(({ name }) => name);
+
+    if (missing.length) {
+      console.error(`❌ Bot missing bump channel permissions: ${missing.join(", ")}`);
       return false;
     }
 

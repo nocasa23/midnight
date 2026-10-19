@@ -45,7 +45,7 @@ function getRandomPurge() { return PURGE_BANNERS[Math.floor(Math.random() * PURG
 function getRandomFuck() { return FUCK_GIFS[Math.floor(Math.random() * FUCK_GIFS.length)]; }
 
 function hasStaffPermission(member) {
-  if (member.id === OWNER_ID) return true;
+  if (OWNER_ID.includes(member.id)) return true;
   return member.roles.cache.some(role => PURGE_ROLES.includes(role.id));
 }
 
@@ -69,7 +69,7 @@ client.on("messageCreate", async (message) => {
 
   const isNoRestriction = isNoRestrictionChannel(message.channel.id);
 
-  if (message.author.id !== OWNER_ID && !isNoRestriction) {
+  if (!OWNER_ID.includes(message.author.id) && !isNoRestriction) {
     const userData = userMessageMap.get(message.author.id) || { count: 0, timer: null, lastMessage: Date.now() };
     userData.count += 1;
     if (Date.now() - userData.lastMessage < 1000) userData.count += 3;
@@ -79,7 +79,7 @@ client.on("messageCreate", async (message) => {
     if (userData.count > 8) {
       await member.timeout(20 * 60 * 1000, "Raid/Spam").catch(() => null);
       await message.delete().catch(() => null);
-      const embed = new EmbedBuilder().setColor(0x000000).setTitle("Timed out!").setDescription("Stop raiding/spamming.").setThumbnail(botAvatar);
+      const embed = new EmbedBuilder().setColor(0x000000).setTitle("Timed out!").setDescription("You have been timed out for raiding or spamming.").setThumbnail(botAvatar);
       await message.author.send({ embeds: [embed] }).catch(() => null);
       return;
     }
@@ -124,7 +124,7 @@ client.on("messageCreate", async (message) => {
      message.content.startsWith("!help") || 
      message.content.startsWith("!create_ticket_panel"));
 
-  if (isCommand && !isCommandsChannel(message.channel.id) && message.author.id !== OWNER_ID) {
+  if (isCommand && !isCommandsChannel(message.channel.id) && !OWNER_ID.includes(message.author.id)) {
     await message.delete().catch(() => null);
     const errorEmbed = new EmbedBuilder()
       .setColor(0xFF0000)
@@ -164,7 +164,7 @@ client.on("messageCreate", async (message) => {
     const mention = message.mentions.users.first();
     if (!mention) return message.reply("❌ Mention a user!");
     
-    if (mention.id === OWNER_ID) {
+    if (OWNER_ID.includes(mention.id)) {
       return message.reply("You can't fuck owner r3tard go fuck yourself!💔🥀");
     }
     

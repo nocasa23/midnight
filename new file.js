@@ -163,17 +163,11 @@ client.on("messageCreate", async (message) => {
 
   // !bump posts the reminder embed; it does not invoke another bot's slash command.
   if (message.content.trim() === "!bump") {
-    const sent = await sendBump();
-    if (!sent) {
-      await message.reply({
-        content: "The bump reminder could not be posted. The bot is missing at least one required permission in the bump channel (View Channel, Send Messages, Embed Links, or Attach Files). Invite creation is optional and will be skipped if unavailable."
-      }).catch(() => null);
+    const result = await sendBump();
+    if (!result.ok) {
+      await message.reply(`Couldn't post the bump reminder: ${result.reason}`).catch(() => null);
       return;
     }
-
-    await message.reply(
-      "Bump reminder posted. Use the server listing bot's /bump command manually to bump the server."
-    ).catch(() => null);
   }
 
   // !fuck
@@ -425,25 +419,7 @@ async function sendBump() {
     const channel = client.channels.cache.get(BUMP_CHANNEL_ID) || await client.channels.fetch(BUMP_CHANNEL_ID).catch(() => null);
     if (!channel?.isTextBased() || !channel.isSendable()) {
       console.error("❌ Bump channel not found or cannot send messages.");
-      return false;
-    }
-
-    const botMember = channel.guild.members.me ?? await channel.guild.members.fetchMe();
-    const botPerms = channel.permissionsFor(botMember);
-    const requiredPermissions = [
-      { flag: PermissionsBitField.Flags.ViewChannel, name: "View Channel" },
-      { flag: PermissionsBitField.Flags.SendMessages, name: "Send Messages" },
-      { flag: PermissionsBitField.Flags.EmbedLinks, name: "Embed Links" },
-      { flag: PermissionsBitField.Flags.AttachFiles, name: "Attach Files" }
-    ];
-
-    const missing = requiredPermissions
-      .filter(({ flag }) => !botPerms?.has(flag))
-      .map(({ name }) => name);
-
-    if (missing.length) {
-      console.error(`❌ Bot missing bump channel permissions: ${missing.join(", ")}`);
-      return false;
+      return { ok: false, reason: `Configured bump channel ${BUMP_CHANNEL_ID} was not found or is not a sendable text channel.` };
     }
 
     let inviteUrl = null;
@@ -469,12 +445,30 @@ async function sendBump() {
       .setDescription(description)
       .setImage(`attachment://${BUMP_BANNER}`);
 
-    await channel.send({ embeds: [bumpEmbed], files: [BUMP_BANNER] });
-    console.log("✅ Bump reminder embed sent in the bump channel.");
-    return true;
+    try {
+      await channel.send({ embeds: [bumpEmbed], files: [BUMP_BANNER] });
+      console.log("✅ Bump reminder embed sent in the bump channel.");
+      return { ok: true, fallback: false };
+    } catch (embedError) {
+      console.warn("⚠️ Bump embed/image post failed; trying plain text:", embedError);
+      const fallbackText = inviteUrl
+        ? `Server bump reminder: use /bump to bump the server! Invite: ${inviteUrl}`
+        : "Server bump reminder: use /bump to bump the server!";
+      try {
+        await channel.send({ content: fallbackText });
+        console.warn("⚠️ Bump reminder posted as plain text; check Embed Links/Attach Files and the GIF path.");
+        return { ok: true, fallback: true };
+      } catch (sendError) {
+        const code = sendError.code ? ` (Discord error ${sendError.code})` : "";
+        const reason = `${sendError.message || "Discord rejected the message"}${code}`;
+        console.error(`❌ Could not send bump reminder to channel ${BUMP_CHANNEL_ID}:`, sendError);
+        return { ok: false, reason };
+      }
+    }
   } catch (error) {
     console.error("❌ Failed to send /bump:", error);
-    return false;
+    const code = error.code ? ` (Discord error ${error.code})` : "";
+    return { ok: false, reason: `${error.message || "Unexpected error"}${code}` };
   }
 }
 

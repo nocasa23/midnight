@@ -428,7 +428,8 @@ async function sendBump() {
       return false;
     }
 
-    const botPerms = channel.permissionsFor(client.user);
+    const botMember = channel.guild.members.me ?? await channel.guild.members.fetchMe();
+    const botPerms = channel.permissionsFor(botMember);
     const requiredPermissions = [
       { flag: PermissionsBitField.Flags.ViewChannel, name: "View Channel" },
       { flag: PermissionsBitField.Flags.SendMessages, name: "Send Messages" },

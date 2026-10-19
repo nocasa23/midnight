@@ -151,7 +151,7 @@ client.on("messageCreate", async (message) => {
       const deleted = await message.channel.bulkDelete(fetched, true);
       const embed = new EmbedBuilder()
         .setColor(0x5A00A3)
-        .setTitle("Successfully purged")
+        .setTitle("<a:943832alertastaff2000:1561886468786487306>Successfully purged")
         .setDescription(`Deleted ${deleted.size} messages`)
         .setImage(`attachment://${PURGE_BANNER}`)
         .setFooter({ text: "𝔐𝔦𝔡𝔫𝔦𝔤𝔥𝔱𝔑𝔬𝔦𝔯 • Purge" });

@@ -39,7 +39,7 @@ const PURGE_BANNER = "deleted.gif";
 const FUCK_GIFS = ["https://cdn.hentaigifz.com/84966/bounce-bounce.gif", "https://cdn.hentaigifz.com/88822/mankitsu-happening.gif"];
 const WELCOME_BANNER = "welcome.gif";
 const TICKET_CREATED = "ticket.gif";
-const BUMP_BANNER = "bump.gif";
+const BUMP_BANNER = "bumpy.gif";
 
 // ================= UTILS =================
 function getRandomFuck() { return FUCK_GIFS[Math.floor(Math.random() * FUCK_GIFS.length)]; }
@@ -79,7 +79,7 @@ client.on("messageCreate", async (message) => {
     if (userData.count > 8) {
       await member.timeout(20 * 60 * 1000, "Raid/Spam").catch(() => null);
       await message.delete().catch(() => null);
-      const embed = new EmbedBuilder().setColor(0x000000).setTitle("Timed out!").setDescription("You have been timed out for raiding or spamming.").setThumbnail(botAvatar);
+      const embed = new EmbedBuilder().setColor(0x5A00A3).setTitle("Timed out!").setDescription("You have been timed out for raiding or spamming.").setThumbnail(botAvatar);
       await message.author.send({ embeds: [embed] }).catch(() => null);
       return;
     }
@@ -88,7 +88,7 @@ client.on("messageCreate", async (message) => {
     if (linkRegex.test(message.content)) {
       await message.delete().catch(() => null);
       await member.timeout(15 * 60 * 1000, "Link - anti-raid").catch(() => null);
-      const embed = new EmbedBuilder().setColor(0x000000).setTitle("Links forbidden").setDescription("Any link = timeout.").setThumbnail(botAvatar);
+      const embed = new EmbedBuilder().setColor(0x5A00A3).setTitle("Links forbidden").setDescription("Any link = timeout.").setThumbnail(botAvatar);
       await message.author.send({ embeds: [embed] }).catch(() => null);
       return;
     }
@@ -96,7 +96,7 @@ client.on("messageCreate", async (message) => {
     if (/injuries/i.test(message.content)) {
       await member.timeout(10 * 60 * 1000).catch(() => null);
       await message.delete().catch(() => null);
-      const embed = new EmbedBuilder().setColor(0x000000).setTitle("Timed out").setDescription("Stop 'injuries'.").setThumbnail(botAvatar);
+      const embed = new EmbedBuilder().setColor(0x5A00A3).setTitle("Timed out").setDescription("Stop 'injuries'.").setThumbnail(botAvatar);
       await message.author.send({ embeds: [embed] }).catch(() => null);
       return;
     }
@@ -149,11 +149,11 @@ client.on("messageCreate", async (message) => {
       const fetched = await message.channel.messages.fetch({ limit: 100 });
       const deleted = await message.channel.bulkDelete(fetched, true);
       const embed = new EmbedBuilder()
-        .setColor(0x000000)
+        .setColor(0x5A00A3)
         .setTitle("Successfully purged")
         .setDescription(`Deleted ${deleted.size} messages`)
         .setImage(`attachment://${PURGE_BANNER}`)
-        .setFooter({ text: "𝔏𝔞𝔯𝔭 𝔢𝔪𝔭𝔦𝔯𝔢 • Purge" });
+        .setFooter({ text: "𝔐𝔦𝔡𝔫𝔦𝔤𝔥𝔱𝔑𝔬𝔦𝔯 • Purge" });
       await message.channel.send({ embeds: [embed], files: [PURGE_BANNER] });
     } catch (e) {
       console.error("Purge failed:", e);
@@ -183,14 +183,14 @@ client.on("messageCreate", async (message) => {
       return message.reply("U can't fuck nobody everyone broke yo ahh💔🥀");
     }
     
-    await message.channel.send({ embeds: [new EmbedBuilder().setColor(0x000000).setTitle(`Fucking ${mention.username}`).setDescription(`<@${mention.id}>`).setImage(getRandomFuck()).setFooter({ text: `Requested by ${message.author.username}` })] });
+    await message.channel.send({ embeds: [new EmbedBuilder().setColor(0x5A00A3).setTitle(`Fucking ${mention.username}`).setDescription(`<@${mention.id}>`).setImage(getRandomFuck()).setFooter({ text: `Requested by ${message.author.username}` })] });
   }
 
   // !help
   if (message.content.startsWith("!help")) {
     const embed = new EmbedBuilder()
-      .setColor(0x000000)
-      .setTitle("— <a:emoji_20:1464222092353605735> HELP MENU —")
+      .setColor(0x5A00A3)
+      .setTitle("— <:12:1561848880608452729> HELP MENU —")
       .setDescription(
         `**Available Commands:**\n\n` +
         `**!fuck @user**\n` +
@@ -215,7 +215,7 @@ client.on("messageCreate", async (message) => {
     }
 
     const embedMain = new EmbedBuilder()
-      .setColor(0x000000)
+      .setColor(0x5A00A3)
       .setTitle(`—— <a:42:1561848948325359616>ꜱᴜᴘᴘᴏʀᴛ  ——`)
       .setDescription(`<a:arrow:1561864158587265094>ᴘʟᴇᴀꜱᴇ ᴄʜᴏᴏꜱᴇ ᴀ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴅᴇᴘᴇɴᴅɪɴɢ ᴏɴ ᴡʜᴀᴛ ᴛʏᴘᴇ ᴏꜰ ɪꜱꜱᴜᴇ ʏᴏᴜʀ ᴅᴇᴀʟɪɴɢ ᴡɪᴛʜ`)
       .setImage(`attachment://${TICKET_BANNER}`);
@@ -267,31 +267,32 @@ client.on("guildMemberAdd", async (member) => {
     console.error(`❌ Welcome channel ${WELCOME_CHANNEL_ID} was not found or cannot send messages.`);
   } else {
     const welcomeMain = new EmbedBuilder()
-      .setColor(0x000000)
-      .setTitle(`<a:emoji_18:1532377883622899752> Welcome to larp empire!!`)
+      .setColor(0x5A00A3)
+      .setTitle(`<:12:1561848880608452729> Welcome to MidnightNoir Community!!`)
       .setDescription(
         `Read\n` +
-        `<#1525971261807923322>\n\n` +
+        `<#1500916724327911454>\n\n` +
         `<#1532395654742278385>\n\n` +
+        `create support tickets in <#1543938580177485824> if you want some help or if you have any questions\n` +
         `Remember to verify!!\n` +
-        `<#1525971261807923323>`
+        `<#1500916725112115210>`
       )
       .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
       .setImage(`attachment://${WELCOME_BANNER}`);
 
     await welcomeChannel.send({
-      content: `<@${member.id}> has joined the server!`,
+      content: `<@${member.id}> <:12:1561848880608452729> has joined the server!`,
       embeds: [welcomeMain],
       files: [welcomeFile]
     }).catch(error => console.error("❌ Failed to send server welcome:", error));
   }
 
   const dmEmbed = new EmbedBuilder()
-    .setColor(0x000000)
-    .setTitle("Welcome to larp empire")
+    .setColor(0x5A00A3)
+    .setTitle("Welcome to MidnightNoir Community!!")
     .setDescription(
-      `**${member.user.username}**\n\n` +
-      `And don’t forget to verify to gain access to all channels`
+      `**<@${member.id}>**\n\n` +
+      `don’t forget to verify to gain access to all channels`
     )
     .setImage(`attachment://${WELCOME_BANNER}`)
     .setThumbnail(member.user.displayAvatarURL({ dynamic: true }));
@@ -326,7 +327,7 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply({ content: `Ticket created: ${ticketChannel}`, ephemeral: true });
 
     const ticketMain = new EmbedBuilder()
-      .setColor(0x000000)
+      .setColor(0x5A00A3)
       .setTitle(`— <:32:1561848918936002601> TICKET CREATED —`)
       .setDescription(
         `**Welcome** <@${member.id}> !\n\n` +
@@ -440,7 +441,7 @@ async function sendBump() {
       : "Remember to use !bump to bump the server!\n\nInvite link temporarily unavailable.";
 
     const bumpEmbed = new EmbedBuilder()
-      .setColor(0x000000)
+      .setColor(0x5A00A3)
       .setTitle("Server Bump Reminder")
       .setDescription(description)
       .setImage(`attachment://${BUMP_BANNER}`);

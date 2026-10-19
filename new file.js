@@ -204,9 +204,9 @@ client.on("messageCreate", async (message) => {
         `(Owner + Staff) Creates the ticket selection panel.`
         
       )
-      .setImage(`attachment://${PURGE_BANNER}`)
+      .setImage(`attachment://${COMMANDO_BANNER}`)
       .setFooter({ text: `Requested by ${message.author.username}` });
-    await message.channel.send({ embeds: [embed], files: [PURGE_BANNER] });
+    await message.channel.send({ embeds: [embed], files: [COMMANDO_BANNER] });
   }
 
   // !create_ticket_panel

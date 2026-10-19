@@ -165,7 +165,7 @@ client.on("messageCreate", async (message) => {
     const sent = await sendBump();
     if (!sent) {
       await message.reply({
-        content: "The bump reminder could not be posted. The bot is missing the required permissions in the bump channel (View Channel, Send Messages, Embed Links, Attach Files, and Create Instant Invite)."
+        content: "The bump reminder could not be posted. The bot is missing at least one required permission in the bump channel (View Channel, Send Messages, Embed Links, or Attach Files). Invite creation is optional and will be skipped if unavailable."
       }).catch(() => null);
       return;
     }
@@ -433,8 +433,7 @@ async function sendBump() {
       { flag: PermissionsBitField.Flags.ViewChannel, name: "View Channel" },
       { flag: PermissionsBitField.Flags.SendMessages, name: "Send Messages" },
       { flag: PermissionsBitField.Flags.EmbedLinks, name: "Embed Links" },
-      { flag: PermissionsBitField.Flags.AttachFiles, name: "Attach Files" },
-      { flag: PermissionsBitField.Flags.CreateInstantInvite, name: "Create Instant Invite" }
+      { flag: PermissionsBitField.Flags.AttachFiles, name: "Attach Files" }
     ];
 
     const missing = requiredPermissions

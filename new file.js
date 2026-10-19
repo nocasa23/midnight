@@ -436,8 +436,8 @@ async function sendBump() {
     }
 
     const description = inviteUrl
-      ? `Remember to use /bump to bump the server!\n\n[INVITE MORE MEMBERS FOR GIVEAWAY](${inviteUrl})`
-      : "Remember to use /bump to bump the server!\n\nInvite link temporarily unavailable.";
+      ? `Remember to use !bump to bump the server!\n\n[**INVITE MORE MEMBERS FOR GIVEAWAY**](${inviteUrl})`
+      : "Remember to use !bump to bump the server!\n\nInvite link temporarily unavailable.";
 
     const bumpEmbed = new EmbedBuilder()
       .setColor(0x000000)
@@ -452,8 +452,8 @@ async function sendBump() {
     } catch (embedError) {
       console.warn("⚠️ Bump embed/image post failed; trying plain text:", embedError);
       const fallbackText = inviteUrl
-        ? `Server bump reminder: use /bump to bump the server! Invite: ${inviteUrl}`
-        : "Server bump reminder: use /bump to bump the server!";
+        ? `Server bump reminder: use !bump to bump the server! Invite: ${inviteUrl}`
+        : "Server bump reminder: use !bump to bump the server!";
       try {
         await channel.send({ content: fallbackText });
         console.warn("⚠️ Bump reminder posted as plain text; check Embed Links/Attach Files and the GIF path.");

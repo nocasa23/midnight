@@ -121,7 +121,8 @@ client.on("messageCreate", async (message) => {
     (message.content.startsWith("!purge") || 
      message.content.startsWith("!fuck") || 
      message.content.startsWith("!help") || 
-     message.content.startsWith("!create_ticket_panel"));
+     message.content.startsWith("!create_ticket_panel") ||
+     message.content.startsWith("!bump"));
 
   if (isCommand && !isCommandsChannel(message.channel.id) && !OWNER_ID.includes(message.author.id)) {
     await message.delete().catch(() => null);
@@ -159,6 +160,16 @@ client.on("messageCreate", async (message) => {
     }
   }
 
+  // !bump posts the reminder embed; it does not invoke another bot's slash command.
+  if (message.content.trim() === "!bump") {
+    const sent = await sendBump();
+    await message.reply(
+      sent
+        ? "Bump reminder posted. Use the server listing bot's /bump command manually to bump the server."
+        : "Couldn't post the bump reminder. Check the bot's channel permissions and logs."
+    ).catch(() => null);
+  }
+
   // !fuck
   if (message.content.startsWith("!fuck")) {
     const mention = message.mentions.users.first();
@@ -186,8 +197,11 @@ client.on("messageCreate", async (message) => {
         `Sends a funny GIF message to the mentioned user.\n\n` +
         `**!purge**\n` +
         `(Owner + Staff) Deletes the last 100 messages in the current channel.\n\n` +
+        `**!bump**\n` +
+        `Posts a reminder to bump the server.\n\n` +
         `**!create_ticket_panel**\n` +
         `(Owner + Staff) Creates the ticket selection panel.`
+        
       )
       .setImage(`attachment://${PURGE_BANNER}`)
       .setFooter({ text: `Requested by ${message.author.username}` });
@@ -204,7 +218,7 @@ client.on("messageCreate", async (message) => {
       .setColor(0x000000)
       .setTitle(`—— <a:42:1561848948325359616>ꜱᴜᴘᴘᴏʀᴛ  ——`)
       .setDescription(`<a:arraw:1545764510407589888>ᴘʟᴇᴀꜱᴇ ᴄʜᴏᴏꜱᴇ ᴀ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴅᴇᴘᴇɴᴅɪɴɢ ᴏɴ ᴡʜᴀᴛ ᴛʏᴘᴇ ᴏꜰ ɪꜱꜱᴜᴇ ʏᴏᴜʀ ᴅᴇᴀʟɪɴɢ ᴡɪᴛʜ`)
-      .setImage(TICKET_BANNER);
+      .setImage(`attachment://${TICKET_BANNER}`);
 
     const selectMenu = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
@@ -229,7 +243,16 @@ client.on("messageCreate", async (message) => {
         ])
     );
 
-    await message.channel.send({ embeds: [embedMain], components: [selectMenu] });
+    try {
+      await message.channel.send({
+        embeds: [embedMain],
+        components: [selectMenu],
+        files: [TICKET_BANNER]
+      });
+    } catch (error) {
+      console.error("Failed to send ticket panel:", error);
+      await message.reply("Couldn't create the ticket panel. Check the bot's Send Messages and Embed Links permissions.").catch(() => null);
+    }
   }
 
 });
@@ -396,7 +419,7 @@ async function sendBump() {
     const channel = client.channels.cache.get(BUMP_CHANNEL_ID);
     if (!channel?.isTextBased() || !channel.isSendable()) {
       console.error("❌ Bump channel not found or cannot send messages.");
-      return;
+      return false;
     }
 
     const invite = await channel.createInvite({
@@ -414,12 +437,14 @@ async function sendBump() {
 
     await channel.send({ embeds: [bumpEmbed], files: [BUMP_BANNER] });
     console.log("✅ Bump reminder embed sent in the bump channel.");
+    return true;
   } catch (error) {
     console.error("❌ Failed to send /bump:", error);
+    return false;
   }
 }
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`📢 Bump channel: ${BUMP_CHANNEL_ID}`);
   setTimeout(sendBump, 5000);
   setInterval(sendBump, 2 * 60 * 60 * 1000);

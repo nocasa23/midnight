@@ -1,6 +1,7 @@
 // ================= IMPORTURI =================
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, ChannelType, PermissionsBitField } = require("discord.js");
 const express = require("express");
+const path = require("node:path");
 
 // ================= EXPRESS KEEP ALIVE (web service) =================
 const app = express();
@@ -264,46 +265,45 @@ client.on("messageCreate", async (message) => {
 
 // ================= WELCOME SYSTEM =================
 client.on("guildMemberAdd", async (member) => {
-  try {
-    const welcomeChannel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
-    
-    // Server welcome
-    if (welcomeChannel) {
-      const welcomeMain = new EmbedBuilder()
-        .setColor(0x000000)
-        .setTitle(`<a:emoji_18:1532377883622899752> Welcome to larp empire!!`)
-        .setDescription(
-          `Read\n` +
-          `<#1525971261807923322>\n\n` +
-          `<#1532395654742278385>\n\n` +
-          `Remember to verify!!\n` +
-          `<#1525971261807923323>`
-        )
-        .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
-        .setImage(TICKET_BANNER);
+  const welcomeFile = { attachment: path.join(__dirname, WELCOME_BANNER), name: WELCOME_BANNER };
+  const welcomeChannel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID)
+    || await member.guild.channels.fetch(WELCOME_CHANNEL_ID).catch(() => null);
 
-      await welcomeChannel.send({
-        content: `<@${member.id}> has joined the server!`,
-        embeds: [welcomeMain]
-      });
-    }
-
-    // DM welcome (silent try)
-    const dmEmbed = new EmbedBuilder()
+  if (!welcomeChannel?.isTextBased() || !welcomeChannel.isSendable()) {
+    console.error(`❌ Welcome channel ${WELCOME_CHANNEL_ID} was not found or cannot send messages.`);
+  } else {
+    const welcomeMain = new EmbedBuilder()
       .setColor(0x000000)
-      .setTitle("Welcome to larp empire")
+      .setTitle(`<a:emoji_18:1532377883622899752> Welcome to larp empire!!`)
       .setDescription(
-        `**${member.user.username}**\n\n` +
-        `And don’t forget to verify to gain access to all channels`
+        `Read\n` +
+        `<#1525971261807923322>\n\n` +
+        `<#1532395654742278385>\n\n` +
+        `Remember to verify!!\n` +
+        `<#1525971261807923323>`
       )
-      .setImage(TICKET_BANNER)
-      .setThumbnail(member.user.displayAvatarURL({ dynamic: true }));
+      .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+      .setImage(`attachment://${WELCOME_BANNER}`);
 
-    await member.send({ embeds: [dmEmbed] }).catch(() => null);
-
-  } catch (err) {
-    console.error("Welcome error:", err);
+    await welcomeChannel.send({
+      content: `<@${member.id}> has joined the server!`,
+      embeds: [welcomeMain],
+      files: [welcomeFile]
+    }).catch(error => console.error("❌ Failed to send server welcome:", error));
   }
+
+  const dmEmbed = new EmbedBuilder()
+    .setColor(0x000000)
+    .setTitle("Welcome to larp empire")
+    .setDescription(
+      `**${member.user.username}**\n\n` +
+      `And don’t forget to verify to gain access to all channels`
+    )
+    .setImage(`attachment://${WELCOME_BANNER}`)
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }));
+
+  await member.send({ embeds: [dmEmbed], files: [welcomeFile] })
+    .catch(error => console.warn("⚠️ Could not send welcome DM (the member may have DMs disabled):", error.message));
 });
 
 // ================= INTERACTIONS =================

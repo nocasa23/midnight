@@ -217,7 +217,7 @@ client.on("messageCreate", async (message) => {
     const embedMain = new EmbedBuilder()
       .setColor(0x000000)
       .setTitle(`—— <a:42:1561848948325359616>ꜱᴜᴘᴘᴏʀᴛ  ——`)
-      .setDescription(`<a:arraw:1545764510407589888>ᴘʟᴇᴀꜱᴇ ᴄʜᴏᴏꜱᴇ ᴀ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴅᴇᴘᴇɴᴅɪɴɢ ᴏɴ ᴡʜᴀᴛ ᴛʏᴘᴇ ᴏꜰ ɪꜱꜱᴜᴇ ʏᴏᴜʀ ᴅᴇᴀʟɪɴɢ ᴡɪᴛʜ`)
+      .setDescription(`<a:arrow:1561864158587265094>ᴘʟᴇᴀꜱᴇ ᴄʜᴏᴏꜱᴇ ᴀ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴅᴇᴘᴇɴᴅɪɴɢ ᴏɴ ᴡʜᴀᴛ ᴛʏᴘᴇ ᴏꜰ ɪꜱꜱᴜᴇ ʏᴏᴜʀ ᴅᴇᴀʟɪɴɢ ᴡɪᴛʜ`)
       .setImage(`attachment://${TICKET_BANNER}`);
 
     const selectMenu = new ActionRowBuilder().addComponents(
@@ -334,7 +334,7 @@ client.on("interactionCreate", async (interaction) => {
         `Please describe what type of issue you have.\n` +
         `Staff will be with you shortly.`
       )
-      .setImage(TICKET_CREATED);
+      .setImage(`attachment://${TICKET_CREATED}`);
 
     const closeButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -345,7 +345,8 @@ client.on("interactionCreate", async (interaction) => {
 
     await ticketChannel.send({
       embeds: [ticketMain],
-      components: [closeButton]
+      components: [closeButton],
+      files: [TICKET_CREATED]
     });
 
     const supportMentions = SUPPORT_ROLES.map(roleId => `<@&${roleId}>`).join(' ');
@@ -422,17 +423,37 @@ async function sendBump() {
       return false;
     }
 
-    const invite = await channel.createInvite({
-      maxAge: 0,
-      maxUses: 0,
-      unique: false,
-      reason: "Server bump promotion"
-    });
+    const botPerms = channel.permissionsFor(client.user);
+    const canSend = botPerms?.has(PermissionsBitField.Flags.SendMessages);
+    const canEmbed = botPerms?.has(PermissionsBitField.Flags.EmbedLinks);
+    const canAttach = botPerms?.has(PermissionsBitField.Flags.AttachFiles);
+
+    if (!canSend || !canEmbed || !canAttach) {
+      console.error("❌ Bot missing send/embed/attach permissions in bump channel.");
+      return false;
+    }
+
+    let inviteUrl = null;
+    try {
+      const invite = await channel.createInvite({
+        maxAge: 0,
+        maxUses: 0,
+        unique: false,
+        reason: "Server bump promotion"
+      });
+      inviteUrl = invite.url;
+    } catch (inviteErr) {
+      console.warn("⚠️ Could not create invite for bump channel, continuing without invite link:", inviteErr);
+    }
+
+    const description = inviteUrl
+      ? `Remember to use /bump to bump the server!\n\n[INVITE MORE MEMBERS FOR GIVEAWAY](${inviteUrl})`
+      : "Remember to use /bump to bump the server!\n\nInvite link temporarily unavailable.";
 
     const bumpEmbed = new EmbedBuilder()
       .setColor(0x000000)
       .setTitle("Server Bump Reminder")
-      .setDescription(`Remember to use /bump to bump the server!\n\n[INVITE MORE MEMBERS FOR GIVEAWAY](${invite.url})`)
+      .setDescription(description)
       .setImage(`attachment://${BUMP_BANNER}`);
 
     await channel.send({ embeds: [bumpEmbed], files: [BUMP_BANNER] });

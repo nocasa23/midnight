@@ -438,8 +438,8 @@ async function sendBump() {
     }
 
     const description = inviteUrl
-      ? `<a:73288animatedarrowpurple:1561882951757602956>Invite 5 members so we can start a big giveaway!\n\n <a:73288animatedarrowpurple:1561882951757602956>[**INVITE MORE MEMBERS TO START A BIG GIVEAWAY**](${inviteUrl})`
-      : "<a:73288animatedarrowpurple:1561882951757602956>Invite 5 members so we can start a big giveaway!\n\nInvite link temporarily unavailable.";
+      ? `<a:73288animatedarrowpurple:1561882951757602956>Invite 5 more members to start a big giveaway!\n\n <a:73288animatedarrowpurple:1561882951757602956>[**INVITE MORE MEMBERS TO START A BIG GIVEAWAY**](${inviteUrl})`
+      : "<a:73288animatedarrowpurple:1561882951757602956>Invite 5 more members to start a big giveaway!\n\nInvite link temporarily unavailable.";
 
     const bumpEmbed = new EmbedBuilder()
       .setColor(0x5A00A3)

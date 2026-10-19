@@ -443,7 +443,7 @@ async function sendBump() {
 
     const bumpEmbed = new EmbedBuilder()
       .setColor(0x5A00A3)
-      .setTitle("<a:73288animatedarrowpurple:1561882951757602956> MidnightNoir Server Bump Reminder")
+      .setTitle("<:850656shinystar:1561882926809874563> MidnightNoir Server Bump Reminder")
       .setDescription(description)
       .setImage(`attachment://${BUMP_BANNER}`);
 

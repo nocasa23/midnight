@@ -282,7 +282,7 @@ client.on("guildMemberAdd", async (member) => {
       .setImage(`attachment://${WELCOME_BANNER}`);
 
     await welcomeChannel.send({
-      content: `<@${member.id}> <:12:1561848880608452729> has joined the server!`,
+      content: `<@${member.id}> has joined the server!<:12:1561848880608452729>`,
       embeds: [welcomeMain],
       files: [welcomeFile]
     }).catch(error => console.error("❌ Failed to send server welcome:", error));

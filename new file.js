@@ -14,6 +14,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers
   ]
@@ -32,6 +33,7 @@ const PURGE_ROLES = ["1525861821460906194", "1503561405947711528"];
 
 // ================= PROTECTED !help MESSAGE =================
 const PROTECTED_MESSAGE_ID = "1543935711621947523";
+const activeGiveaways = new Map();
 
 // ================= BANNERE =================
 const TICKET_BANNER = "support.gif";
@@ -123,6 +125,7 @@ client.on("messageCreate", async (message) => {
     (message.content.startsWith("!purge") || 
      message.content.startsWith("!fuck") || 
      message.content.startsWith("!help") || 
+     message.content.startsWith("!giveaway") ||
      message.content.startsWith("!create_ticket_panel") ||
      message.content.startsWith("!bump"));
 
@@ -200,13 +203,62 @@ client.on("messageCreate", async (message) => {
         `(Owner + Staff) Deletes the last 100 messages in the current channel.\n\n` +
         `**!bump**\n` +
         `Posts a reminder to bump the server.\n\n` +
+        `**!giveaway**\n` +
+        `Starts a giveaway with automatic winner selection.\n\n` +
         `**!create_ticket_panel**\n` +
         `(Owner + Staff) Creates the ticket selection panel.`
-        
       )
       .setImage(`attachment://${COMMANDO_BANNER}`)
       .setFooter({ text: `Requested by ${message.author.username}` });
     await message.channel.send({ embeds: [embed], files: [COMMANDO_BANNER] });
+  }
+
+  // !giveaway
+  if (message.content.startsWith("!giveaway")) {
+    if (!hasStaffPermission(member)) {
+      return message.reply("❌ You don't have permission to use this command.");
+    }
+
+    const rawInput = message.content.slice("!giveaway".length).trim();
+    const args = rawInput.split(/\s+/);
+
+    if (args.length < 3) {
+      return message.reply("Usage: `!giveaway <duration> <winnerCount> <prize>`\nExample: `!giveaway 1h 2 Nitro`.");
+    }
+
+    const durationText = args[0];
+    const winnerCount = Number(args[1]);
+    const prize = args.slice(2).join(" ");
+    const durationMs = parseDurationToMs(durationText);
+
+    if (!durationMs || !Number.isInteger(winnerCount) || winnerCount < 1 || !prize) {
+      return message.reply("Invalid giveaway setup. Use: `!giveaway 1h 2 Nitro`.");
+    }
+
+    const giveawayEmbed = new EmbedBuilder()
+      .setColor(0xFFD700)
+      .setTitle(`🎉 Giveaway: ${prize}`)
+      .setDescription(
+        `React with 🎉 to enter!\n` +
+        `Winner(s): ${winnerCount}\n` +
+        `Ends: <t:${Math.floor((Date.now() + durationMs) / 1000)}:F>`
+      )
+      .setFooter({ text: `Hosted by ${message.author.tag}` })
+      .setTimestamp();
+
+    const giveawayMessage = await message.channel.send({ embeds: [giveawayEmbed] });
+    await giveawayMessage.react("🎉");
+
+    const giveawayData = {
+      message: giveawayMessage,
+      prize,
+      winnerCount,
+      participants: new Set(),
+      timer: setTimeout(() => finalizeGiveaway(giveawayMessage), durationMs)
+    };
+
+    activeGiveaways.set(giveawayMessage.id, giveawayData);
+    await message.reply(`🎉 Giveaway started for **${prize}**. It will end in ${durationText}.`).catch(() => null);
   }
 
   // !create_ticket_panel
@@ -305,6 +357,87 @@ client.on("guildMemberAdd", async (member) => {
     .catch(error => console.warn("⚠️ Could not send welcome DM (the member may have DMs disabled):", error.message));
 });
 
+client.on("messageReactionAdd", async (reaction, user) => {
+  if (user.bot) return;
+
+  const giveawayData = activeGiveaways.get(reaction.message.id);
+  if (!giveawayData || reaction.emoji.name !== "🎉") return;
+
+  giveawayData.participants.add(user.id);
+});
+
+function parseDurationToMs(input) {
+  if (!input || typeof input !== "string") return null;
+
+  const regex = /(\d+)([smhd])/gi;
+  let totalMs = 0;
+  let match;
+
+  while ((match = regex.exec(input.toLowerCase())) !== null) {
+    const value = Number(match[1]);
+    const unit = match[2];
+
+    if (unit === "s") totalMs += value * 1000;
+    else if (unit === "m") totalMs += value * 60 * 1000;
+    else if (unit === "h") totalMs += value * 60 * 60 * 1000;
+    else if (unit === "d") totalMs += value * 24 * 60 * 60 * 1000;
+  }
+
+  return totalMs > 0 ? totalMs : null;
+}
+
+async function finalizeGiveaway(giveawayMessage) {
+  const giveawayData = activeGiveaways.get(giveawayMessage.id);
+  if (!giveawayData) return;
+
+  clearTimeout(giveawayData.timer);
+  activeGiveaways.delete(giveawayMessage.id);
+
+  const reaction = giveawayMessage.reactions.cache.get("🎉");
+  const entrants = new Set();
+
+  if (reaction) {
+    const users = await reaction.users.fetch().catch(() => null);
+    if (users) {
+      for (const user of users.values()) {
+        if (!user.bot) entrants.add(user.id);
+      }
+    }
+  }
+
+  for (const userId of giveawayData.participants) {
+    entrants.add(userId);
+  }
+
+  const entries = [...entrants];
+  const winners = [];
+
+  for (let i = 0; i < Math.min(giveawayData.winnerCount, entries.length); i++) {
+    const randomIndex = Math.floor(Math.random() * entries.length);
+    const winnerId = entries.splice(randomIndex, 1)[0];
+    winners.push(winnerId);
+  }
+
+  const winnerText = winners.length
+    ? winners.map(id => `<@${id}>`).join(", ")
+    : "No participants entered";
+
+  const endedEmbed = new EmbedBuilder()
+    .setColor(0x00D166)
+    .setTitle(`🎉 Giveaway Ended: ${giveawayData.prize}`)
+    .setDescription(`Winners: ${winnerText}\nParticipants: ${winners.length + entries.length}`)
+    .setFooter({ text: "Giveaway complete" })
+    .setTimestamp();
+
+  await giveawayMessage.edit({ embeds: [endedEmbed] }).catch(() => null);
+
+  if (winners.length) {
+    await giveawayMessage.channel.send({ content: `🎉 Congrats ${winnerText}! You won **${giveawayData.prize}**.` }).catch(() => null);
+  } else {
+    await giveawayMessage.channel.send({ content: `🎉 Giveaway for **${giveawayData.prize}** ended with no participants.` }).catch(() => null);
+  }
+}
+
 // ================= INTERACTIONS =================
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isStringSelectMenu() && interaction.customId === "ticket_select") {
@@ -369,7 +502,7 @@ async function autoPurge() {
   try {
     console.log("🔄 Auto-purge starting...");
     for (const guild of client.guilds.cache.values()) {
-      for (const channelId of ["1525971262285807761"]) {
+      for (const channelId of ["1561856640712708186"]) {
         const channel = guild.channels.cache.get(channelId);
         if (channel?.isTextBased()) {
           let fetched;
@@ -441,7 +574,7 @@ async function sendBump() {
     }
 
     const description = inviteUrl
-      ? `<a:73288animatedarrowpurple:1561882951757602956>Invite more members to start a big giveaway!\n\n <a:73288animatedarrowpurple:1561882951757602956>[**INVITE MORE MEMBERS TO START A BIG GIVEAWAY**](${inviteUrl})`
+      ? `<a:73288animatedarrowpurple:1561882951757602956>Invite more members to start a big giveaway!\n\n <a:73288animatedarrowpurple:1561882951757602956>[**JOIN HERE TO START GIVEAWAY**](${inviteUrl})\n[JOIN HERE TO PARTICIPATE ON GIVEAWAY](https://rbx.tg/bKVNVvb-)`
       : "<a:73288animatedarrowpurple:1561882951757602956>Invite more members to start a big giveaway!\n\nInvite link temporarily unavailable.";
 
     const bumpEmbed = new EmbedBuilder()
@@ -480,7 +613,7 @@ async function sendBump() {
 client.once("ready", async () => {
   console.log(`📢 Bump channel: ${BUMP_CHANNEL_ID}`);
   setTimeout(sendBump, 5000);
-  setInterval(sendBump, 30 * 1000);
+  setInterval(sendBump, 300 * 1000);
 });
 
 // LOGIN

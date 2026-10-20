@@ -294,7 +294,7 @@ client.on("guildMemberAdd", async (member) => {
     .setDescription(
       `**<@${member.id}>**\n\n` +
       `Read the rules in <#1500916724327911454> and create a support ticket in <#1543938580177485824> if you need help.\n\n` +
-      `Enjoy your stay!`
+      `Enjoy your stay!\n\n` +
       `also don’t forget to verify to gain access to all channels and features!\n\n` +
       `**<a:73288animatedarrowpurple:1561882951757602956> Verify here:** <#1500916725112115210>`
     )

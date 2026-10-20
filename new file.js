@@ -574,7 +574,7 @@ async function sendBump() {
     }
 
     const description = inviteUrl
-      ? `<a:73288animatedarrowpurple:1561882951757602956>Invite more members to start a big giveaway!\n\n <a:73288animatedarrowpurple:1561882951757602956>[**JOIN HERE TO START GIVEAWAY**](${inviteUrl})\n[JOIN HERE TO PARTICIPATE ON GIVEAWAY](https://rbx.tg/bKVNVvb-)`
+      ? `<a:73288animatedarrowpurple:1561882951757602956>Invite more members to start a big giveaway!\n\n <a:73288animatedarrowpurple:1561882951757602956>[**DISCORD INVITE URL**](${inviteUrl})\n[**JOIN HERE TO PARTICIPATE ON GIVEAWAY**](https://rbx.tg/bKVNVvb-)`
       : "<a:73288animatedarrowpurple:1561882951757602956>Invite more members to start a big giveaway!\n\nInvite link temporarily unavailable.";
 
     const bumpEmbed = new EmbedBuilder()
